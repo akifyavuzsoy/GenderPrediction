@@ -26,7 +26,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, LSTM, TimeDistributed, Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, LSTM, TimeDistributed, Conv2D, MaxPooling2D, SimpleRNN, GRU
 from tensorflow.keras.optimizers import Adam
 from sklearn import metrics
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -180,11 +180,54 @@ class genderPrediction:
             case 'RNN':
                 print("Building the RNN Model...")
                 self.model = None
+                self.model = Sequential([
+                    SimpleRNN(128, input_shape=(40,), activation='tanh'),
+                    Dropout(0.5),
+                    Dense(64, activation='relu'),
+                    Dropout(0.5),
+                    Dense(1, activation='sigmoid')  # İkili sınıflandırma için ('M' veya 'F')
+                ])
+                
+                self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+                
+                # Modelin özetini yazdırma
+                print("Model Summary:")
+                self.model.summary()
             
             case 'LSTM':
                 print("Building the LSTM Model...")
                 self.model = None
+                self.model = Sequential([
+                    LSTM(128, input_shape=(40,), return_sequences=True, activation='tanh'),
+                    Dropout(0.5),
+                    LSTM(64, return_sequences=False, activation='tanh'),
+                    Dropout(0.5),
+                    Dense(1, activation='sigmoid')  # İkili sınıflandırma için ('M' veya 'F')
+                ])
                 
+                self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+                
+                # Modelin özetini yazdırma
+                print("LSTM Model Summary:")
+                self.model.summary()
+
+            case 'GRU':
+                print("Building the GRU Model...")
+                self.model = None
+                self.model = Sequential([
+                    GRU(128, input_shape=(40,), return_sequences=True, activation='tanh'),
+                    Dropout(0.5),
+                    GRU(64, return_sequences=False, activation='tanh'),
+                    Dropout(0.5),
+                    Dense(1, activation='sigmoid')  # İkili sınıflandırma için ('M' veya 'F')
+                ])
+                
+                self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+                
+                # Modelin özetini yazdırma
+                print("GRU Model Summary:")
+                self.model.summary()
+
             case _:
                 pass
             
