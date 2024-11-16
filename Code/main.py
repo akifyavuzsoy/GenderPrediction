@@ -116,8 +116,6 @@ class MainApp(QtWidgets.QMainWindow):
             self.ui.txt_ModelAccuracy.setText(f"{self.trainModel_accuracy:.2f}")
             QtWidgets.QMessageBox.information(self, "Success", "Model Training Completed!")
 
-            # TODO: Modeli kaydetmek için dosya yolunuda kullanıcıdan alınmalı
-
             # TODO: Eğitim esnasında bir bar dolsun
 
 
