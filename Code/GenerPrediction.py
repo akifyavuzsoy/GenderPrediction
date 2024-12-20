@@ -26,7 +26,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, LSTM, TimeDistributed, Conv2D, MaxPooling2D, SimpleRNN, GRU, Conv1D, MaxPooling1D
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, LSTM, TimeDistributed, Conv1D, Conv2D, MaxPooling1D, MaxPooling2D, SimpleRNN, GRU, Conv1D, MaxPooling1D, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from sklearn import metrics
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -236,6 +236,43 @@ class genderPrediction:
                 print("LSTM Model Summary:")
                 self.model.summary()
 
+            case 'CNN_LSTM':
+                print("Building the LSTM Model for CNN (feature extraction)...")
+                sample_rate = 16000  # Ses örnekleme frekansı
+                max_duration = 3.0  # Maksimum süre (saniye)
+                input_shape = (int(sample_rate * max_duration), 1)  # Her sinyalin sabit boyutlu şekli
+
+                self.model = None
+                self.model = Sequential()
+
+                # CNN Katmanları (1D Conv çünkü sinyal 1 boyutlu)
+                self.model.add(Conv1D(16, kernel_size=5, activation='relu', input_shape=input_shape))
+                self.model.add(MaxPooling1D(pool_size=2))
+                self.model.add(BatchNormalization())
+
+                self.model.add(Conv1D(32, kernel_size=5, activation='relu'))
+                self.model.add(MaxPooling1D(pool_size=2))
+                self.model.add(BatchNormalization())
+
+                self.model.add(Conv1D(64, kernel_size=5, activation='relu'))
+                self.model.add(MaxPooling1D(pool_size=2))
+                self.model.add(BatchNormalization())
+
+                self.model.add(Flatten())  # CNN'den çıkan öznitelikleri düzleştir
+
+                # LSTM Katmanı
+                self.model.add(Dense(128, activation='relu'))
+                self.model.add(Dropout(0.5))
+                self.model.add(Dense(64, activation='relu'))
+                self.model.add(Dropout(0.5))
+
+                # Çıkış Katmanı
+                self.model.add(Dense(2, activation='softmax'))
+
+                # Modeli derle
+                self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+
             case 'GRU':
                 print("Building the GRU Model...")
                 self.model = None
@@ -268,16 +305,21 @@ class genderPrediction:
             mode='max',
             verbose=1
         )
-        
-        history = self.model.fit(
-            self.mfcc_array_train, 
-            np.array(self.y_train_labels), 
-            batch_size=self.batch_size, 
-            epochs=self.epochs, 
-            validation_data=(self.mfcc_array_test, np.array(self.y_test_labels)),
-            callbacks=[checkpoint],
-            verbose=1
-        )
+
+        if (self.model_type == "CNN_LSTM"):
+            print("Selected CNN_LSTM Model...")
+            pass
+
+        else:
+            history = self.model.fit(
+                self.mfcc_array_train,
+                np.array(self.y_train_labels),
+                batch_size=self.batch_size,
+                epochs=self.epochs,
+                validation_data=(self.mfcc_array_test, np.array(self.y_test_labels)),
+                callbacks=[checkpoint],
+                verbose=1
+            )
         
         print("Evaluating the Model...")
         self.score = self.model.evaluate(self.mfcc_array_test, np.array(self.y_test_labels), verbose=0)

@@ -21,6 +21,9 @@ from GenerPrediction import genderPrediction
 
 from mainUI import Ui_MainWindow  # Orijinal dosyanızdaki sınıfı içe aktarıyoruz
 
+maj_version = 1
+min_version = 3
+rev_version = 3
 
 class MainApp(QtWidgets.QMainWindow):
     def __init__(self):
@@ -46,6 +49,21 @@ class MainApp(QtWidgets.QMainWindow):
             model_save_path='../Models/',
             model_path=None
         )
+        if (maj_version < 10):
+            self.version = f"0{maj_version}"
+        else:
+            self.version = f"{maj_version}"
+        if (min_version < 10):
+            self.version += f".0{min_version}"
+        else:
+            self.version += f".{min_version}"
+        if (rev_version < 10):
+            self.version += f".0{rev_version}"
+        else:
+            self.version += f".{rev_version}"
+        #self.version = f"V{maj_version}.{min_version}.{rev_version}"
+        print(f"Program Versiyonu: {self.version}")
+        self.ui.lbl_version.setText("Ver " + self.version)
 
         # Open Audio butonuna tıklama olayını bağla
         self.ui.btn_OpenAudio.clicked.connect(self.play_audio)

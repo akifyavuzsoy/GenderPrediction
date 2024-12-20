@@ -5,15 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5f19f4cf-2504-4eff-ba23-765c92c34b07" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Code/FeaturePlots.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Code/mst.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Code/deneme.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Code/GenerPrediction.py" beforeDir="false" afterPath="$PROJECT_DIR$/Code/GenerPrediction.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Code/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Code/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Code/main.ui" beforeDir="false" afterPath="$PROJECT_DIR$/Code/main.ui" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Code/mainUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/Code/mainUI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Models/CNN_10_best_model.keras.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Models/CNN_300_best_model.keras.zip" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -168,5 +165,16 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Code/GenerPrediction.py</url>
+          <line>308</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
