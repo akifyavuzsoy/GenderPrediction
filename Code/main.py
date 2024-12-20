@@ -75,10 +75,10 @@ class MainApp(QtWidgets.QMainWindow):
         model_save_path = self.ui.txt_NewModelPath.text()
 
         if model_save_path:
-            model_save_path = model_save_path + '/'
+            model_save_path = model_save_path + '/' + selected_model + '/'
             self.g_Pred.set_ModelSavePath(model_save_path)
         else:
-            model_save_path = '../Models/'
+            model_save_path = '../Models/' + selected_model + '/'
             self.g_Pred.set_ModelSavePath(model_save_path)
 
         if epoch_count != 0 and selected_model:
@@ -148,13 +148,13 @@ class MainApp(QtWidgets.QMainWindow):
                 print("Predicted Class: ", predicted_label)
 
                 # Regex deseni: CNN_epoch_accuracy.h5
-                pattern = r'CNN_(\d+)_(\d\.\d+)\.h5'
+                pattern = r'(CNN|DNN|RNN|LSTM|GRU)_(\d+)_(\d\.\d+)\.h5'
 
                 # Dosya adını dosya yolundan ayırarak regex ile eşleşme kontrolü yapabiliriz.
                 match = re.search(pattern, model_path)
                 if match:
-                    epoch = int(match.group(1))  # Epoch sayısı
-                    accuracy = match.group(2)  # Accuracy değeri
+                    epoch = int(match.group(2))  # Epoch sayısı
+                    accuracy = match.group(3)  # Accuracy değeri
                     accuracy = "{:.2f}".format(float(accuracy))
                     print(f"Epoch: {epoch}")
                     print(f"Accuracy: {accuracy}")

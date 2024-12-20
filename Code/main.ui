@@ -85,6 +85,11 @@
         </item>
         <item>
          <property name="text">
+          <string>CoLSTM</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>GRU</string>
          </property>
         </item>

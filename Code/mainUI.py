@@ -44,6 +44,7 @@ class Ui_MainWindow(object):
         self.cBox_TrainModel.addItem("")
         self.cBox_TrainModel.addItem("")
         self.cBox_TrainModel.addItem("")
+        self.cBox_TrainModel.addItem("")
         self.horizontalLayout.addWidget(self.cBox_TrainModel)
         self.layoutWidget1 = QtWidgets.QWidget(self.groupBox_Train)
         self.layoutWidget1.setGeometry(QtCore.QRect(30, 100, 181, 31))
@@ -207,7 +208,8 @@ class Ui_MainWindow(object):
         self.cBox_TrainModel.setItemText(0, _translate("MainWindow", "CNN"))
         self.cBox_TrainModel.setItemText(1, _translate("MainWindow", "RNN"))
         self.cBox_TrainModel.setItemText(2, _translate("MainWindow", "LSTM"))
-        self.cBox_TrainModel.setItemText(3, _translate("MainWindow", "GRU"))
+        self.cBox_TrainModel.setItemText(3, _translate("MainWindow", "CoLSTM"))
+        self.cBox_TrainModel.setItemText(4, _translate("MainWindow", "GRU"))
         self.label_2.setText(_translate("MainWindow", "Epoch Count"))
         self.label_6.setText(_translate("MainWindow", "Model Accuracy"))
         self.label_5.setText(_translate("MainWindow", "Model     "))
@@ -222,13 +224,3 @@ class Ui_MainWindow(object):
         self.btn_OpenAudio.setText(_translate("MainWindow", "►"))
         self.label_7.setText(_translate("MainWindow", "Prediction       "))
         self.label_8.setText(_translate("MainWindow", "Model Accuracy"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())

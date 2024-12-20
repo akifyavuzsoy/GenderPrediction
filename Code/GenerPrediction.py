@@ -26,7 +26,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, LSTM, TimeDistributed, Conv2D, MaxPooling2D, SimpleRNN, GRU
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, LSTM, TimeDistributed, Conv2D, MaxPooling2D, SimpleRNN, GRU, Conv1D, MaxPooling1D
 from tensorflow.keras.optimizers import Adam
 from sklearn import metrics
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -181,16 +181,15 @@ class genderPrediction:
                 print("Building the RNN Model...")
                 self.model = None
                 self.model = Sequential([
-                    SimpleRNN(128, input_shape=(40,), activation='tanh'),
+                    SimpleRNN(128, input_shape=(40,1), activation='tanh'),
                     Dropout(0.5),
                     Dense(64, activation='relu'),
                     Dropout(0.5),
-                    Dense(1, activation='sigmoid')  # İkili sınıflandırma için ('M' veya 'F')
+                    Dense(1, activation='sigmoid')
                 ])
                 
                 self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-                
-                # Modelin özetini yazdırma
+
                 print("Model Summary:")
                 self.model.summary()
             
@@ -198,16 +197,42 @@ class genderPrediction:
                 print("Building the LSTM Model...")
                 self.model = None
                 self.model = Sequential([
-                    LSTM(128, input_shape=(40,), return_sequences=True, activation='tanh'),
+                    LSTM(128, input_shape=(40,1), return_sequences=True, activation='tanh'),
                     Dropout(0.5),
                     LSTM(64, return_sequences=False, activation='tanh'),
                     Dropout(0.5),
-                    Dense(1, activation='sigmoid')  # İkili sınıflandırma için ('M' veya 'F')
+                    Dense(1, activation='sigmoid')
                 ])
                 
                 self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-                
-                # Modelin özetini yazdırma
+
+                print("LSTM Model Summary:")
+                self.model.summary()
+
+            case 'CoLSTM':
+                print("Building the LSTM Model...")
+                self.model = None
+                self.model = Sequential([
+                    # Conv1D Katmanı - Spektral özellikler için
+                    Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(40, 1)),
+                    MaxPooling1D(pool_size=2),
+                    Dropout(0.2),
+
+                    # Conv1D Katmanı - Spektral özellikler için
+                    Conv1D(filters=64, kernel_size=3, activation='relu'),
+                    MaxPooling1D(pool_size=2),
+                    Dropout(0.2),
+
+                    # LSTM Katmanları - Zamansal ilişkileri öğrenmek için
+                    LSTM(128, return_sequences=True, activation='relu'),
+                    Dropout(0.5),
+                    LSTM(64, return_sequences=False, activation='relu'),
+                    Dropout(0.5),
+                    Dense(1, activation='sigmoid')
+                ])
+
+                self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
                 print("LSTM Model Summary:")
                 self.model.summary()
 
@@ -215,7 +240,7 @@ class genderPrediction:
                 print("Building the GRU Model...")
                 self.model = None
                 self.model = Sequential([
-                    GRU(128, input_shape=(40,), return_sequences=True, activation='tanh'),
+                    GRU(128, input_shape=(40,1), return_sequences=True, activation='tanh'),
                     Dropout(0.5),
                     GRU(64, return_sequences=False, activation='tanh'),
                     Dropout(0.5),
@@ -223,8 +248,7 @@ class genderPrediction:
                 ])
                 
                 self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-                
-                # Modelin özetini yazdırma
+
                 print("GRU Model Summary:")
                 self.model.summary()
 
@@ -266,6 +290,7 @@ class genderPrediction:
         print("Saving the Model...")
         model_name = f"{self.model_type}_{self.epochs}_{self.score[1]}.h5"
         self.model.save(self.model_save_path + model_name)
+        # TODO: model_save_path model tipine göre yeni klasör yapısı oluştur
         
         print("Plotting Training History...")
         model_accuracy_name = f"{self.model_type}_{self.epochs}_model_accuracy"
@@ -350,7 +375,7 @@ if __name__ == "__main__":
         main_path='../TIMIT_V2/data/',
         csv_train_file='../TIMIT_V2/train_data.csv',
         csv_test_file='../TIMIT_V2/test_data.csv',
-        model_type='CNN',
+        model_type='LSTM',
         epochs=12,
         batch_size=32
     )
