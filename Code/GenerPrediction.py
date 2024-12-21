@@ -30,6 +30,7 @@ from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, LSTM, T
 from tensorflow.keras.optimizers import Adam
 from sklearn import metrics
 from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.utils import to_categorical
 from datetime import datetime
 from scipy.io import wavfile as wav
 
@@ -106,16 +107,31 @@ class genderPrediction:
                 self.wav_test_files.append(self.main_path + file_test)
                 self.y_test_labels.append(1 if row['speaker_id'][0] == 'M' else 0)
 
-    def load_wav_files(self):
+    def load_wav_files(self, sample_rate = 16000, max_duration=3.0):
         print("Loading WAV files using Librosa...")
+        max_samples = int(sample_rate * max_duration)
         for wav in tqdm(self.wav_train_files, desc="Train Files"):
-            x, sr = librosa.load(wav, res_type='kaiser_fast')
-            self.x_train_array.append(x)
+            signal, sr = librosa.load(wav, res_type='kaiser_fast', sr=sample_rate)
+            if len(signal) < max_samples:
+                pad_width = max_samples - len(signal)
+                signal = np.pad(signal, (0, pad_width), mode='constant')
+            else:
+                signal = signal[:max_samples]
+            # All signals are ensured to be the same size...
+
+            self.x_train_array.append(signal)
             self.sr_train_array.append(sr)
         
         for wav in tqdm(self.wav_test_files, desc="Test Files"):
-            x, sr = librosa.load(wav, res_type='kaiser_fast')
-            self.x_test_array.append(x)
+            signal, sr = librosa.load(wav, res_type='kaiser_fast', sr=sample_rate)
+            if len(signal) < max_samples:
+                pad_width = max_samples - len(signal)
+                signal = np.pad(signal, (0, pad_width), mode='constant')
+            else:
+                signal = signal[:max_samples]
+            # All signals are ensured to be the same size...
+
+            self.x_test_array.append(signal)
             self.sr_test_array.append(sr)
             
     def visualize_waveform(self, data_array, title="Waveform"):
@@ -307,8 +323,32 @@ class genderPrediction:
         )
 
         if (self.model_type == "CNN_LSTM"):
+            # Since CNN will be used for feature extraction, raw signal data was given to the model...
             print("Selected CNN_LSTM Model...")
-            pass
+            x_train = np.array(self.x_train_array)
+            x_test = np.array(self.x_test_array)
+            x_train= x_train[..., np.newaxis]
+            x_test = x_test[..., np.newaxis]
+
+            y_train = to_categorical(self.y_train_labels, num_classes=2)
+            y_test = to_categorical(self.y_test_labels, num_classes=2)
+
+            history = self.model.fit(
+                x_train,
+                np.array(y_train),
+                batch_size=self.batch_size,
+                epochs=self.epochs,
+                validation_data=(x_test, np.array(y_test)),
+                callbacks=[checkpoint],
+                verbose=1
+            )
+
+            print("Evaluating the Model...")
+            self.score = self.model.evaluate(x_test, np.array(y_test), verbose=0) # TODO: Burayı değiştir..
+            print(f"Validation Accuracy: {self.score[1]}")
+
+            predictions = self.model.predict(x_test) # TODO: Burayı değiştir..
+            print("Predicted Test Dataset = ", predictions)
 
         else:
             history = self.model.fit(
@@ -320,14 +360,16 @@ class genderPrediction:
                 callbacks=[checkpoint],
                 verbose=1
             )
-        
-        print("Evaluating the Model...")
-        self.score = self.model.evaluate(self.mfcc_array_test, np.array(self.y_test_labels), verbose=0)
-        print(f"Validation Accuracy: {self.score[1]}")
-        
-        predictions = self.model.predict(self.mfcc_array_test)
-        predicted_classes = (predictions >= 0.5).astype(int).flatten()
-        print("Predicted Test Dataset = ", predicted_classes)
+
+            print("Evaluating the Model...")
+            self.score = self.model.evaluate(self.mfcc_array_test, np.array(self.y_test_labels), verbose=0)
+            print(f"Validation Accuracy: {self.score[1]}")
+
+            predictions = self.model.predict(self.mfcc_array_test)
+            predicted_classes = (predictions >= 0.5).astype(int).flatten()
+            print("Predicted Test Dataset = ", predicted_classes)
+
+
         
         print("Saving the Model...")
         model_name = f"{self.model_type}_{self.epochs}_{self.score[1]}.h5"
