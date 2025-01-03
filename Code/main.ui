@@ -90,7 +90,27 @@
         </item>
         <item>
          <property name="text">
-          <string>CNN_LSTM</string>
+          <string>CNN_LSTM_Single</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>CNN_LSTM_Multi</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>CNN_LSTM_Bidirectional</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>CNN_LSTM_Dropout</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>CNN_LSTM_Attention</string>
          </property>
         </item>
         <item>
