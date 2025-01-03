@@ -23,7 +23,7 @@ from mainUI import Ui_MainWindow  # Orijinal dosyanızdaki sınıfı içe aktar�
 
 maj_version = 1
 min_version = 3
-rev_version = 4
+rev_version = 8
 
 class MainApp(QtWidgets.QMainWindow):
     def __init__(self):
