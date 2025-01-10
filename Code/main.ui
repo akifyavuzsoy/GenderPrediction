@@ -49,7 +49,7 @@
       <rect>
        <x>30</x>
        <y>40</y>
-       <width>181</width>
+       <width>211</width>
        <height>41</height>
       </rect>
      </property>
@@ -86,6 +86,11 @@
         <item>
          <property name="text">
           <string>CoLSTM</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>CNN_LSTM</string>
          </property>
         </item>
         <item>

@@ -5,6 +5,8 @@ Created on Thu Nov 14 21:33:56 2024
 
 @author: akifyavuzsoy
 """
+from cv2.gapi import kernel
+from keras.src.callbacks import ReduceLROnPlateau
 
 print("***********************************************************************")
 print("             Started the Signal Classification Project")
@@ -73,6 +75,7 @@ class genderPrediction:
         self.rand_data = random.randint(1, 100)
 
         self.model = None
+        self.reduce_lr = None
 
         self.score = 0
 
@@ -256,6 +259,42 @@ class genderPrediction:
                 print("LSTM Model Summary:")
                 self.model.summary()
 
+            case 'CNN_LSTM':
+                print("Building the LSTM Model for CNN (feature extraction)...")
+                sample_rate = 16000  # Ses örnekleme frekansı
+                max_duration = 3.0  # Maksimum süre (saniye)
+                input_shape = (int(sample_rate * max_duration), 1)  # Her sinyalin sabit boyutlu şekli
+
+                self.model = None
+                self.model = Sequential()
+
+                # CNN Katmanları (1D Conv çünkü sinyal 1 boyutlu)
+                self.model.add(Conv1D(32, kernel_size=3, activation='relu', input_shape=input_shape))
+                self.model.add(MaxPooling1D(pool_size=2))
+                self.model.add(BatchNormalization())
+
+                self.model.add(Conv1D(32, kernel_size=5, activation='relu'))
+                self.model.add(MaxPooling1D(pool_size=2))
+                self.model.add(BatchNormalization())
+
+
+                # LSTM Katmanı
+                self.model.add(LSTM(512, return_sequences=True))
+                self.model.add(LSTM(264, return_sequences=True))
+                self.model.add(LSTM(128, return_sequences=True))
+                self.model.add(LSTM(64, return_sequences=False))
+
+                # Çıkış Katmanı
+                self.model.add(Dense(1, activation='sigmoid'))
+
+                # Optimizer ve Adaptive Learning Rate için callback
+                optimizer = Adam(learning_rate=0.001)
+                self.reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=1e-6, verbose=1)
+
+                # Modeli derle
+                self.model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+
+
             case 'CNN_LSTM_Single':
                 print("Building the LSTM Model for CNN (feature extraction)...")
                 sample_rate = 16000  # Ses örnekleme frekansı
@@ -279,13 +318,17 @@ class genderPrediction:
                 self.model.add(BatchNormalization())
 
                 # LSTM Katmanı
-                self.model.add(LSTM(64, return_sequences=False))
+                self.model.add(LSTM(264, return_sequences=False))        # 64,128,264
 
                 # Çıkış Katmanı
                 self.model.add(Dense(1, activation='sigmoid'))
 
+                # Optimizer ve Adaptive Learning Rate için callback
+                optimizer = Adam(learning_rate=0.001)
+                self.reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=1e-6, verbose=1)
+
                 # Modeli derle
-                self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+                self.model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
             case 'CNN_LSTM_Multi':
                 print("Building the LSTM Model for CNN (feature extraction)...")
@@ -297,27 +340,27 @@ class genderPrediction:
                 self.model = Sequential()
 
                 # CNN Katmanları (1D Conv çünkü sinyal 1 boyutlu)
-                self.model.add(Conv1D(16, kernel_size=5, activation='relu', input_shape=input_shape))
-                self.model.add(MaxPooling1D(pool_size=2))
-                self.model.add(BatchNormalization())
-
-                self.model.add(Conv1D(32, kernel_size=5, activation='relu'))
-                self.model.add(MaxPooling1D(pool_size=2))
-                self.model.add(BatchNormalization())
-
-                self.model.add(Conv1D(64, kernel_size=5, activation='relu'))
+                self.model.add(Conv1D(64, kernel_size=5, activation='relu', input_shape=input_shape))
                 self.model.add(MaxPooling1D(pool_size=2))
                 self.model.add(BatchNormalization())
 
                 # LSTM Katmanı
-                self.model.add(LSTM(128, return_sequences=True))  # İlk LSTM katmanı, sonraki LSTM için diziyi döndürür
-                self.model.add(LSTM(64, return_sequences=True))  # Son LSTM katmanı
+                self.model.add(LSTM(64, return_sequences=True))  # İlk LSTM katmanı, sonraki LSTM için diziyi döndürür
+                self.model.add(LSTM(64, return_sequences=False))  # Son LSTM katmanı
+
+                # Çıkış Katmanı
+                self.model.add(Dense(64, activation='sigmoid'))  # Çıkış katmanı
+                self.model.add(Dense(32, activation='sigmoid'))  # Çıkış katmanı
+                self.model.add(Dense(16, activation='sigmoid'))  # Çıkış katmanı
 
                 # Çıkış Katmanı
                 self.model.add(Dense(1, activation='sigmoid'))  # Çıkış katmanı
 
+                optimizer = Adam(learning_rate=0.001)
+                self.reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=1e-6, verbose=1)
+
                 # Modeli derle
-                self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+                self.model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
             case 'CNN_LSTM_Bidirectional':
                 print("Building the LSTM Model for CNN (feature extraction)...")
@@ -342,7 +385,7 @@ class genderPrediction:
                 self.model.add(BatchNormalization())
 
                 # LSTM Katmanı
-                self.model.add(Bidirectional(LSTM(64, return_sequences=True)))
+                self.model.add(Bidirectional(LSTM(64, return_sequences=False)))
 
                 # Çıkış Katmanı
                 self.model.add(Dense(1, activation='sigmoid'))  # Çıkış katmanı
@@ -375,7 +418,7 @@ class genderPrediction:
                 # LSTM Katmanı
                 self.model.add(LSTM(128, return_sequences=True))
                 self.model.add(Dropout(0.3))  # %30 oranında dropout
-                self.model.add(LSTM(64, return_sequences=True))
+                self.model.add(LSTM(64, return_sequences=False))
                 self.model.add(Dropout(0.3))  # %30 oranında dropout
 
                 # Çıkış Katmanı
@@ -407,7 +450,7 @@ class genderPrediction:
                 self.model.add(BatchNormalization())
 
                 # LSTM Katmanı
-                self.model.add(LSTM(128, return_sequences=True))  # Attention mekanizması için diziler döndürülmeli
+                self.model.add(LSTM(128, return_sequences=False))  # Attention mekanizması için diziler döndürülmeli
                 self.model.add(Attention())  # Attention katmanı
                 self.model.add(Dense(64, activation='relu'))
 
@@ -451,7 +494,7 @@ class genderPrediction:
         )
 
         if (
-                self.model_type == "CNN_LSTM_Single" and self.model_type == "CNN_LSTM_Multi" and self.model_type == "CNN_LSTM_Bidirectional" and self.model_type == "CNN_LSTM_Dropout" and self.model_type == "CNN_LSTM_Attention"):
+                self.model_type == "CNN_LSTM_Single" and self.model_type == "CNN_LSTM_Multi" and self.model_type == "CNN_LSTM_Bidirectional" and self.model_type == "CNN_LSTM_Dropout" and self.model_type == "CNN_LSTM_Attention" and self.model_type == "LSTM_Deneme"):
             # Since CNN will be used for feature extraction, raw signal data was given to the model...
             print("Selected CNN + LSTM Models...")
             x_train = np.array(self.x_train_array)
@@ -468,7 +511,7 @@ class genderPrediction:
                 batch_size=self.batch_size,
                 epochs=self.epochs,
                 validation_data=(x_test, np.array(y_test)),
-                callbacks=[checkpoint],
+                callbacks=[checkpoint, self.reduce_lr],
                 verbose=1
             )
 
@@ -586,7 +629,7 @@ if __name__ == "__main__":
         main_path='../TIMIT_V2/data/',
         csv_train_file='../TIMIT_V2/train_data.csv',
         csv_test_file='../TIMIT_V2/test_data.csv',
-        model_type='LSTM',
+        model_type='CNN_LSTM_Multi',
         epochs=12,
         batch_size=32
     )
